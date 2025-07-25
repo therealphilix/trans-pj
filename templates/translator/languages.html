@@ -1,0 +1,399 @@
+{% extends 'translator/base.html' %}
+
+{% block title %}Supported Languages - Google Cloud Translator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-globe"></i> Supported Languages</h2>
+            <div class="text-muted">
+                <i class="fas fa-info-circle"></i> 
+                Total: {{ languages.count }} languages
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" id="searchLanguages" placeholder="Search languages...">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <select class="form-select" id="sortLanguages">
+                    <option value="name">Sort by Name</option>
+                    <option value="code">Sort by Code</option>
+                </select>
+            </div>
+        </div>
+        
+        {% if languages %}
+            <!-- Language Cards Grid -->
+            <div class="row" id="languageGrid">
+                {% for language in languages %}
+                    <div class="col-md-4 col-lg-3 mb-3 language-card" 
+                         data-name="{{ language.name|lower }}" 
+                         data-code="{{ language.code|lower }}">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">{{ language.name }}</h5>
+                                <p class="card-text">
+                                    <span class="badge bg-primary">{{ language.code }}</span>
+                                </p>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary select-source" 
+                                            data-code="{{ language.code }}" 
+                                            data-name="{{ language.name }}">
+                                        <i class="fas fa-arrow-right"></i> From
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success select-target" 
+                                            data-code="{{ language.code }}" 
+                                            data-name="{{ language.name }}">
+                                        <i class="fas fa-arrow-left"></i> To
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Popular Language Pairs:</h6>
+                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                        <button class="btn btn-sm btn-outline-secondary language-pair" 
+                                                data-source="en" data-target="es">
+                                            EN → ES
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary language-pair" 
+                                                data-source="en" data-target="fr">
+                                            EN → FR
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary language-pair" 
+                                                data-source="en" data-target="de">
+                                            EN → DE
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary language-pair" 
+                                                data-source="en" data-target="zh">
+                                            EN → ZH
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary language-pair" 
+                                                data-source="en" data-target="ja">
+                                            EN → JA
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary language-pair" 
+                                                data-source="es" data-target="en">
+                                            ES → EN
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Selected Languages:</h6>
+                                    <div id="selectedLanguages" class="mb-3">
+                                        <div class="text-muted">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Click language buttons to select source and target languages
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary" id="goToTranslate" disabled>
+                                            <i class="fas fa-language"></i> Go to Translate
+                                        </button>
+                                        <button class="btn btn-outline-secondary" id="clearSelection">
+                                            <i class="fas fa-times"></i> Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Language Statistics -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-bar"></i> Language Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="h4 text-primary">{{ languages.count }}</div>
+                                    <div class="text-muted">Total Languages</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 text-success" id="europeanCount">0</div>
+                                    <div class="text-muted">European</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 text-warning" id="asianCount">0</div>
+                                    <div class="text-muted">Asian</div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="h4 text-info" id="otherCount">0</div>
+                                    <div class="text-muted">Others</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>No languages found!</strong> 
+                The supported languages list is empty. Please check your Google Cloud Translation API configuration.
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Go to Home
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Language Detail Modal -->
+<div class="modal fade" id="languageModal" tabindex="-1" aria-labelledby="languageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="languageModalLabel">Language Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="languageDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="useLanguage">Use for Translation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedSource = null;
+let selectedTarget = null;
+
+// Search functionality
+document.getElementById('searchLanguages').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const cards = document.querySelectorAll('.language-card');
+    
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        const code = card.dataset.code;
+        
+        if (name.includes(searchTerm) || code.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Sort functionality
+document.getElementById('sortLanguages').addEventListener('change', function() {
+    const sortBy = this.value;
+    const grid = document.getElementById('languageGrid');
+    const cards = Array.from(grid.querySelectorAll('.language-card'));
+    
+    cards.sort((a, b) => {
+        const aValue = sortBy === 'name' ? a.dataset.name : a.dataset.code;
+        const bValue = sortBy === 'name' ? b.dataset.name : b.dataset.code;
+        return aValue.localeCompare(bValue);
+    });
+    
+    // Clear and re-append sorted cards
+    grid.innerHTML = '';
+    cards.forEach(card => grid.appendChild(card));
+});
+
+// Language selection
+document.querySelectorAll('.select-source').forEach(button => {
+    button.addEventListener('click', function() {
+        const code = this.dataset.code;
+        const name = this.dataset.name;
+        
+        selectedSource = { code, name };
+        updateSelectedLanguages();
+        
+        // Visual feedback
+        document.querySelectorAll('.select-source').forEach(btn => btn.classList.remove('btn-primary'));
+        this.classList.add('btn-primary');
+    });
+});
+
+document.querySelectorAll('.select-target').forEach(button => {
+    button.addEventListener('click', function() {
+        const code = this.dataset.code;
+        const name = this.dataset.name;
+        
+        selectedTarget = { code, name };
+        updateSelectedLanguages();
+        
+        // Visual feedback
+        document.querySelectorAll('.select-target').forEach(btn => btn.classList.remove('btn-success'));
+        this.classList.add('btn-success');
+    });
+});
+
+// Popular language pairs
+document.querySelectorAll('.language-pair').forEach(button => {
+    button.addEventListener('click', function() {
+        const sourceCode = this.dataset.source;
+        const targetCode = this.dataset.target;
+        
+        // Find language names
+        const sourceCard = document.querySelector(`[data-code="${sourceCode}"]`);
+        const targetCard = document.querySelector(`[data-code="${targetCode}"]`);
+        
+        if (sourceCard && targetCard) {
+            selectedSource = { 
+                code: sourceCode, 
+                name: sourceCard.querySelector('.card-title').textContent 
+            };
+            selectedTarget = { 
+                code: targetCode, 
+                name: targetCard.querySelector('.card-title').textContent 
+            };
+            
+            updateSelectedLanguages();
+        }
+    });
+});
+
+// Update selected languages display
+function updateSelectedLanguages() {
+    const container = document.getElementById('selectedLanguages');
+    const goButton = document.getElementById('goToTranslate');
+    
+    if (selectedSource && selectedTarget) {
+        container.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary">${selectedSource.name} (${selectedSource.code})</span>
+                <i class="fas fa-arrow-right"></i>
+                <span class="badge bg-success">${selectedTarget.name} (${selectedTarget.code})</span>
+            </div>
+        `;
+        goButton.disabled = false;
+    } else if (selectedSource) {
+        container.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary">${selectedSource.name} (${selectedSource.code})</span>
+                <i class="fas fa-arrow-right"></i>
+                <span class="text-muted">Select target language</span>
+            </div>
+        `;
+        goButton.disabled = true;
+    } else if (selectedTarget) {
+        container.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted">Select source language</span>
+                <i class="fas fa-arrow-right"></i>
+                <span class="badge bg-success">${selectedTarget.name} (${selectedTarget.code})</span>
+            </div>
+        `;
+        goButton.disabled = true;
+    } else {
+        container.innerHTML = `
+            <div class="text-muted">
+                <i class="fas fa-info-circle"></i> 
+                Click language buttons to select source and target languages
+            </div>
+        `;
+        goButton.disabled = true;
+    }
+}
+
+// Go to translate page
+document.getElementById('goToTranslate').addEventListener('click', function() {
+    if (selectedSource && selectedTarget) {
+        const url = `/?source=${selectedSource.code}&target=${selectedTarget.code}`;
+        window.location.href = url;
+    }
+});
+
+// Clear selection
+document.getElementById('clearSelection').addEventListener('click', function() {
+    selectedSource = null;
+    selectedTarget = null;
+    updateSelectedLanguages();
+    
+    // Reset button styles
+    document.querySelectorAll('.select-source').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+    document.querySelectorAll('.select-target').forEach(btn => {
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-success');
+    });
+});
+
+// Calculate language statistics (simplified)
+document.addEventListener('DOMContentLoaded', function() {
+    const languages = document.querySelectorAll('.language-card');
+    let europeanCount = 0;
+    let asianCount = 0;
+    let otherCount = 0;
+    
+    // This is a simplified categorization - in a real app, you'd have a proper mapping
+    const europeanCodes = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi', 'pl', 'cs', 'sk', 'hu', 'ro', 'bg', 'hr', 'sr', 'sl', 'et', 'lv', 'lt', 'mt', 'ga', 'cy', 'is', 'sq', 'mk', 'bs', 'me', 'ru', 'uk', 'be', 'el', 'tr'];
+    const asianCodes = ['zh', 'ja', 'ko', 'hi', 'ar', 'th', 'vi', 'id', 'ms', 'tl', 'bn', 'te', 'ta', 'ur', 'fa', 'he', 'ka', 'hy', 'az', 'kk', 'ky', 'uz', 'mn', 'my', 'km', 'lo', 'si', 'ne', 'ml', 'kn', 'gu', 'pa', 'or', 'as', 'sa'];
+    
+    languages.forEach(card => {
+        const code = card.dataset.code;
+        if (europeanCodes.includes(code)) {
+            europeanCount++;
+        } else if (asianCodes.includes(code)) {
+            asianCount++;
+        } else {
+            otherCount++;
+        }
+    });
+    
+    document.getElementById('europeanCount').textContent = europeanCount;
+    document.getElementById('asianCount').textContent = asianCount;
+    document.getElementById('otherCount').textContent = otherCount;
+});
+
+// Handle URL parameters for pre-selection
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sourceParam = urlParams.get('source');
+    const targetParam = urlParams.get('target');
+    
+    if (sourceParam) {
+        const sourceButton = document.querySelector(`[data-code="${sourceParam}"].select-source`);
+        if (sourceButton) {
+            sourceButton.click();
+        }
+    }
+    
+    if (targetParam) {
+        const targetButton = document.querySelector(`[data-code="${targetParam}"].select-target`);
+        if (targetButton) {
+            targetButton.click();
+        }
+    }
+});
+</script>
+{% endblock %}
